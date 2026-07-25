@@ -12,16 +12,11 @@ document.addEventListener('DOMContentLoaded', () => {
     const dateForm = document.getElementById('date-form');
     const datePicker = document.getElementById('date-picker');
     const timePicker = document.getElementById('time-picker');
+    const messageInput = document.getElementById('message-input');
     const btnSubmitDate = document.getElementById('btn-submit-date');
     
     const confirmedDatetime = document.getElementById('confirmed-datetime');
     const btnReset = document.getElementById('btn-reset');
-    
-    // Countdown elements
-    const cdDays = document.getElementById('cd-days');
-    const cdHours = document.getElementById('cd-hours');
-    const cdMins = document.getElementById('cd-mins');
-    const cdSecs = document.getElementById('cd-secs');
 
     // --- State ---
     let noAttempts = 0;
@@ -160,52 +155,101 @@ document.addEventListener('DOMContentLoaded', () => {
 
     datePicker.addEventListener('change', checkFormValidity);
     timePicker.addEventListener('change', checkFormValidity);
+    datePicker.addEventListener('input', checkFormValidity);
+    timePicker.addEventListener('input', checkFormValidity);
 
     dateForm.addEventListener('submit', (e) => {
         e.preventDefault();
         
         const dateStr = datePicker.value;
         const timeStr = timePicker.value;
-        const targetDate = new Date(`${dateStr}T${timeStr}`);
+        const messageVal = messageInput ? messageInput.value.trim() : '';
         
+        if (!dateStr || !timeStr) return;
+
+        // Cross-browser safe parsing for Safari on iOS and mobile webviews
+        const [year, month, day] = dateStr.split('-').map(Number);
+        const [hours, minutes] = timeStr.split(':').map(Number);
+        const targetDate = new Date(year, month - 1, day, hours, minutes);
+        
+        if (isNaN(targetDate.getTime())) {
+            alert("Please pick a valid date and time! 💖");
+            return;
+        }
+
         // Ensure not in past
         if (targetDate < new Date()) {
             alert("Oops! You can't pick a date in the past! 🕰️");
             return;
         }
         
-        localStorage.setItem('dateOfDate', targetDate.toISOString());
+        try {
+            localStorage.setItem('dateOfDate', targetDate.toISOString());
+        } catch (err) {
+            console.warn('LocalStorage save error:', err);
+        }
+
+        // Send push notification to Telegram
+        sendNotification(dateStr, timeStr, messageVal);
+
         showCountdownScreen(targetDate);
     });
+
+    async function sendNotification(date, time, message) {
+        try {
+            await fetch('/api/send-date', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ date, time, message })
+            });
+        } catch (err) {
+            console.warn('Failed to send Telegram notification:', err);
+        }
+    }
 
     // --- Screen 3: Countdown ---
 
     function checkExistingDate() {
-        const savedDate = localStorage.getItem('dateOfDate');
-        if (savedDate) {
-            const targetDate = new Date(savedDate);
-            if (targetDate > new Date()) {
-                screenQuestion.classList.replace('active', 'hidden');
-                screenQuestion.setAttribute('aria-hidden', 'true');
-                showCountdownScreen(targetDate, true);
-            } else {
-                localStorage.removeItem('dateOfDate');
+        try {
+            const savedDate = localStorage.getItem('dateOfDate');
+            if (savedDate) {
+                const targetDate = new Date(savedDate);
+                if (!isNaN(targetDate.getTime()) && targetDate > new Date()) {
+                    screenQuestion.classList.replace('active', 'hidden');
+                    screenQuestion.setAttribute('aria-hidden', 'true');
+                    showCountdownScreen(targetDate, true);
+                } else {
+                    localStorage.removeItem('dateOfDate');
+                }
             }
+        } catch (err) {
+            console.warn('LocalStorage read error:', err);
         }
     }
 
     function showCountdownScreen(targetDate, instant = false) {
+        const activeCard = document.querySelector('.card.active') || screenDate;
         if (!instant) {
-            switchScreen(document.querySelector('.card.active') || screenDate, screenCountdown);
+            switchScreen(activeCard, screenCountdown);
         } else {
+            activeCard.classList.remove('active');
+            activeCard.classList.add('hidden');
+            activeCard.setAttribute('aria-hidden', 'true');
+            activeCard.style.opacity = '';
+            
             screenCountdown.classList.remove('hidden');
             screenCountdown.classList.add('active');
             screenCountdown.removeAttribute('aria-hidden');
+            screenCountdown.style.opacity = '';
         }
         
         // Format: "Saturday, August 15 at 6:30 PM"
         const options = { weekday: 'long', month: 'long', day: 'numeric', hour: 'numeric', minute: '2-digit' };
-        confirmedDatetime.textContent = targetDate.toLocaleDateString('en-US', options);
+        try {
+            confirmedDatetime.textContent = targetDate.toLocaleDateString('en-US', options);
+        } catch (err) {
+            confirmedDatetime.textContent = targetDate.toLocaleString();
+        }
         
         startCountdown(targetDate);
     }
@@ -242,7 +286,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     btnReset.addEventListener('click', () => {
-        localStorage.removeItem('dateOfDate');
+        try {
+            localStorage.removeItem('dateOfDate');
+        } catch (e) {}
         clearInterval(countdownInterval);
         
         // Reset everything
@@ -270,13 +316,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Utilities & Effects ---
 
     function switchScreen(oldScreen, newScreen) {
+        if (!oldScreen || !newScreen || oldScreen === newScreen) return;
+
         oldScreen.style.opacity = '0';
         
         setTimeout(() => {
             oldScreen.classList.remove('active');
             oldScreen.classList.add('hidden');
             oldScreen.setAttribute('aria-hidden', 'true');
+            oldScreen.style.opacity = '';
             
+            newScreen.style.opacity = '0';
             newScreen.classList.remove('hidden');
             newScreen.setAttribute('aria-hidden', 'false');
             
@@ -284,6 +334,7 @@ document.addEventListener('DOMContentLoaded', () => {
             void newScreen.offsetWidth;
             
             newScreen.classList.add('active');
+            newScreen.style.opacity = '';
         }, 300);
     }
 

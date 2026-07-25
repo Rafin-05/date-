@@ -109,7 +109,8 @@ body {
     padding: 2.5rem 2rem;
     box-shadow: var(--glass-shadow);
     text-align: center;
-    transition: transform 0.1s ease-out, opacity 0.5s ease-in-out, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    transition: opacity 0.5s ease-in-out, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    will-change: opacity, transform;
     position: absolute;
     width: 100%;
     top: 50%;
@@ -129,7 +130,7 @@ body {
 }
 
 .card.hidden {
-    display: none;
+    display: none !important;
 }
 
 /* Typography */
