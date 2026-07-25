@@ -7,9 +7,9 @@ export default async function handler(req, res) {
         const { date, time, message } = req.body || {};
 
         const botToken = process.env.TELEGRAM_BOT_TOKEN || '8858077913:AAHAFRiI0Q-2ioID7nFqZPLRox-HwPI9r3Q';
-        let chatId = process.env.TELEGRAM_CHAT_ID;
+        let chatId = process.env.TELEGRAM_CHAT_ID || '2021386080';
 
-        // Auto-discover Chat ID if not explicitly set in Vercel Environment Variables
+        // Auto-discover Chat ID fallback if not set
         if (!chatId && botToken) {
             try {
                 const updatesRes = await fetch(`https://api.telegram.org/bot${botToken}/getUpdates`);
