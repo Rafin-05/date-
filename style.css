@@ -24,6 +24,7 @@ body {
     background: linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%);
     background-attachment: fixed;
     min-height: 100vh;
+    min-height: 100dvh;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -31,8 +32,13 @@ body {
     overflow-y: auto;
     padding: 2rem 0;
     position: relative;
-    user-select: none;
     -webkit-tap-highlight-color: transparent;
+}
+
+/* Ensure inputs, buttons and forms are always selectable */
+input, textarea, select, button {
+    user-select: auto;
+    -webkit-user-select: auto;
 }
 
 /* Fixed Backgrounds and Layers */
@@ -40,8 +46,10 @@ body {
     position: fixed;
     top: 0;
     left: 0;
-    width: 100vw;
-    height: 100vh;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 100%;
     pointer-events: none;
     z-index: 0;
     overflow: hidden;
@@ -96,11 +104,12 @@ body {
     z-index: 10;
     width: 90%;
     max-width: 500px;
-    perspective: 1000px;
+    margin: 0 auto;
 }
 
 /* Cards (Glassmorphism) */
 .card {
+    background: rgba(255, 255, 255, 0.88);
     background: var(--glass-bg);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
@@ -109,24 +118,19 @@ body {
     padding: 2.5rem 2rem;
     box-shadow: var(--glass-shadow);
     text-align: center;
-    transition: opacity 0.5s ease-in-out, transform 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-    will-change: opacity, transform;
-    position: absolute;
     width: 100%;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%) scale(0.9);
+    margin: 0 auto;
     opacity: 0;
+    transform: scale(0.95);
     pointer-events: none;
+    transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
 .card.active {
     opacity: 1;
+    transform: scale(1);
     pointer-events: auto;
     position: relative;
-    top: auto;
-    left: auto;
-    transform: none; /* Let flexbox center it naturally */
 }
 
 .card.hidden {
@@ -319,11 +323,21 @@ textarea {
     padding: 0.8rem 1rem;
     border-radius: 15px;
     border: 2px solid rgba(255,255,255,0.5);
-    background: rgba(255,255,255,0.6);
+    background: rgba(255,255,255,0.75);
     color: var(--text-color);
     font-size: 1rem;
     outline: none;
-    transition: all 0.3s;
+    transition: border-color 0.3s, background-color 0.3s, box-shadow 0.3s;
+    user-select: auto;
+    -webkit-user-select: auto;
+    width: 100%;
+    min-height: 44px;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    padding: 4px;
+    filter: invert(0.3);
 }
 
 input[type="date"]:focus,

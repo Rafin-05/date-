@@ -242,11 +242,13 @@ document.addEventListener('DOMContentLoaded', () => {
             activeCard.classList.add('hidden');
             activeCard.setAttribute('aria-hidden', 'true');
             activeCard.style.opacity = '';
+            activeCard.style.transform = '';
             
             screenCountdown.classList.remove('hidden');
             screenCountdown.classList.add('active');
             screenCountdown.removeAttribute('aria-hidden');
             screenCountdown.style.opacity = '';
+            screenCountdown.style.transform = '';
         }
         
         // Format: "Saturday, August 15 at 6:30 PM"
@@ -329,24 +331,41 @@ document.addEventListener('DOMContentLoaded', () => {
     function switchScreen(oldScreen, newScreen) {
         if (!oldScreen || !newScreen || oldScreen === newScreen) return;
 
+        oldScreen.style.transition = 'opacity 0.25s ease, transform 0.25s ease';
         oldScreen.style.opacity = '0';
-        
+        oldScreen.style.transform = 'scale(0.95)';
+        oldScreen.style.pointerEvents = 'none';
+
         setTimeout(() => {
             oldScreen.classList.remove('active');
             oldScreen.classList.add('hidden');
-            oldScreen.setAttribute('aria-hidden', 'true');
             oldScreen.style.opacity = '';
-            
+            oldScreen.style.transform = '';
+            oldScreen.style.pointerEvents = '';
+            oldScreen.setAttribute('aria-hidden', 'true');
+
+            newScreen.style.transition = 'none';
             newScreen.style.opacity = '0';
+            newScreen.style.transform = 'scale(0.95)';
             newScreen.classList.remove('hidden');
             newScreen.setAttribute('aria-hidden', 'false');
-            
+
             // Force reflow
             void newScreen.offsetWidth;
-            
+
+            newScreen.style.transition = 'opacity 0.35s ease, transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
             newScreen.classList.add('active');
-            newScreen.style.opacity = '';
-        }, 300);
+            newScreen.style.opacity = '1';
+            newScreen.style.transform = 'scale(1)';
+            newScreen.style.pointerEvents = 'auto';
+
+            setTimeout(() => {
+                newScreen.style.transition = '';
+                newScreen.style.opacity = '';
+                newScreen.style.transform = '';
+                newScreen.style.pointerEvents = '';
+            }, 350);
+        }, 250);
     }
 
     function initBackgroundParticles() {
@@ -484,7 +503,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Interactive Card tilt on desktop
     document.addEventListener('mousemove', (e) => {
-        if (window.innerWidth < 768 || window.matchMedia("(prefers-reduced-motion: reduce)").matches || isTouchDevice()) return;
+        if (window.innerWidth < 768 || 
+            window.matchMedia("(prefers-reduced-motion: reduce)").matches || 
+            !window.matchMedia("(hover: hover) and (pointer: fine)").matches || 
+            isTouchDevice()) return;
         
         const activeCard = document.querySelector('.card.active');
         if (!activeCard) return;
