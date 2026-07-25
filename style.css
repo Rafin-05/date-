@@ -348,6 +348,87 @@ textarea:focus {
     box-shadow: 0 0 15px rgba(255, 154, 158, 0.4);
 }
 
+textarea:focus {
+    background: rgba(255,255,255,0.95);
+    border-color: var(--dark-pink);
+    box-shadow: 0 0 15px rgba(255, 154, 158, 0.4);
+}
+
+/* Cute Pills & Dropdowns */
+.pill-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-top: 0.2rem;
+}
+
+.pill-btn {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    padding: 0.6rem 0.9rem;
+    border-radius: 20px;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.65);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.25s ease;
+    outline: none;
+    user-select: auto;
+    -webkit-user-select: auto;
+    flex: 1 1 auto;
+    text-align: center;
+}
+
+.pill-btn:hover {
+    background: rgba(255, 255, 255, 0.9);
+    transform: translateY(-1px);
+}
+
+.pill-btn.active {
+    background: linear-gradient(135deg, #ff9a9e 0%, #fecfef 100%);
+    color: #5d4037;
+    border-color: #ff9a9e;
+    box-shadow: 0 4px 12px rgba(255, 154, 158, 0.4);
+}
+
+.custom-select-row {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: 0.6rem;
+}
+
+.custom-select-row.hidden {
+    display: none !important;
+}
+
+.cute-select {
+    font-family: 'Outfit', sans-serif;
+    font-size: 0.95rem;
+    font-weight: 600;
+    padding: 0.6rem 0.8rem;
+    border-radius: 15px;
+    border: 2px solid rgba(255, 255, 255, 0.7);
+    background: rgba(255, 255, 255, 0.85);
+    color: var(--text-color);
+    outline: none;
+    cursor: pointer;
+    flex: 1;
+    transition: all 0.3s;
+    appearance: none;
+    -webkit-appearance: none;
+    background-image: url("data:image/svg+xml;utf8,<svg fill='%23ff4757' height='24' viewBox='0 0 24 24' width='24' xmlns='http://www.w3.org/2000/svg'><path d='M7 10l5 5 5-5z'/></svg>");
+    background-repeat: no-repeat;
+    background-position: right 6px center;
+    padding-right: 24px;
+}
+
+.cute-select:focus {
+    border-color: var(--dark-pink);
+    box-shadow: 0 0 12px rgba(255, 154, 158, 0.4);
+    background-color: #ffffff;
+}
+
 textarea {
     resize: none;
 }

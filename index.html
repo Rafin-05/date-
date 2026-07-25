@@ -44,19 +44,54 @@
             <p class="subtitle">Pick a day and time for our date ✨</p>
             
             <form id="date-form">
+                <!-- Cute Date Selector -->
                 <div class="input-group">
-                    <label for="date-picker">Date 📅</label>
-                    <input type="date" id="date-picker" required aria-required="true">
+                    <label>Pick a Date 📅</label>
+                    <div class="pill-group" id="date-pill-group">
+                        <button type="button" class="pill-btn date-pill active" data-date-type="tomorrow">Tomorrow 🌸</button>
+                        <button type="button" class="pill-btn date-pill" data-date-type="saturday">This Saturday 💖</button>
+                        <button type="button" class="pill-btn date-pill" data-date-type="sunday">This Sunday ✨</button>
+                        <button type="button" class="pill-btn date-pill" data-date-type="next-weekend">Next Weekend 💌</button>
+                        <button type="button" class="pill-btn date-pill" data-date-type="custom">Choose Date 🗓️</button>
+                    </div>
+                    
+                    <div id="custom-date-container" class="custom-select-row hidden">
+                        <select id="select-month" class="cute-select" aria-label="Select Month"></select>
+                        <select id="select-day" class="cute-select" aria-label="Select Day"></select>
+                        <select id="select-year" class="cute-select" aria-label="Select Year"></select>
+                    </div>
                 </div>
+
+                <!-- Cute Time Selector -->
                 <div class="input-group">
-                    <label for="time-picker">Time ⏰</label>
-                    <input type="time" id="time-picker" required aria-required="true">
+                    <label>Pick a Time ⏰</label>
+                    <div class="pill-group" id="time-pill-group">
+                        <button type="button" class="pill-btn time-pill active" data-time="18:00">6:00 PM 🌆</button>
+                        <button type="button" class="pill-btn time-pill" data-time="19:30">7:30 PM 🍿</button>
+                        <button type="button" class="pill-btn time-pill" data-time="20:30">8:30 PM 🌙</button>
+                        <button type="button" class="pill-btn time-pill" data-time="custom">Custom Time ⏰</button>
+                    </div>
+
+                    <div id="custom-time-container" class="custom-select-row hidden">
+                        <select id="select-hour" class="cute-select" aria-label="Select Hour"></select>
+                        <select id="select-minute" class="cute-select" aria-label="Select Minute">
+                            <option value="00">00</option>
+                            <option value="15">15</option>
+                            <option value="30" selected>30</option>
+                            <option value="45">45</option>
+                        </select>
+                        <select id="select-ampm" class="cute-select" aria-label="Select AM/PM">
+                            <option value="PM" selected>PM 🌙</option>
+                            <option value="AM">AM ☀️</option>
+                        </select>
+                    </div>
                 </div>
+
                 <div class="input-group">
                     <label for="message-input">Anything you want to tell me? 💌</label>
                     <textarea id="message-input" rows="3" placeholder="Your favorite food, places, or just a cute message..."></textarea>
                 </div>
-                <button type="submit" id="btn-submit-date" class="btn yes-btn" disabled>Fix Our Date 💖</button>
+                <button type="submit" id="btn-submit-date" class="btn yes-btn">Fix Our Date 💖</button>
             </form>
         </section>
 

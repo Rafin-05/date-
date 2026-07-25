@@ -10,8 +10,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const teasingText = document.getElementById('teasing-text');
     
     const dateForm = document.getElementById('date-form');
-    const datePicker = document.getElementById('date-picker');
-    const timePicker = document.getElementById('time-picker');
     const messageInput = document.getElementById('message-input');
     const btnSubmitDate = document.getElementById('btn-submit-date');
     
@@ -43,7 +41,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Initial Setup ---
     initBackgroundParticles();
     initCursorTrail();
-    setMinDate();
     checkExistingDate();
 
     // --- Screen 1: The Question ---
@@ -141,75 +138,251 @@ document.addEventListener('DOMContentLoaded', () => {
         }, 6000);
     });
 
-    // --- Screen 2: Date Picker ---
+    // --- Screen 2: Cute Date & Time Selector ---
 
-    function setMinDate() {
-        const today = new Date();
-        const year = today.getFullYear();
-        const month = String(today.getMonth() + 1).padStart(2, '0');
-        const day = String(today.getDate()).padStart(2, '0');
-        datePicker.min = `${year}-${month}-${day}`;
+    const datePills = document.querySelectorAll('.date-pill');
+    const timePills = document.querySelectorAll('.time-pill');
+    const customDateContainer = document.getElementById('custom-date-container');
+    const customTimeContainer = document.getElementById('custom-time-container');
+
+    const selectMonth = document.getElementById('select-month');
+    const selectDay = document.getElementById('select-day');
+    const selectYear = document.getElementById('select-year');
+
+    const selectHour = document.getElementById('select-hour');
+    const selectMinute = document.getElementById('select-minute');
+    const selectAmpm = document.getElementById('select-ampm');
+
+    initCustomDropdowns();
+
+    // Date Pill Selection
+    datePills.forEach(pill => {
+        pill.addEventListener('click', () => {
+            datePills.forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+
+            if (pill.dataset.dateType === 'custom') {
+                if (customDateContainer) customDateContainer.classList.remove('hidden');
+            } else {
+                if (customDateContainer) customDateContainer.classList.add('hidden');
+            }
+        });
+    });
+
+    // Time Pill Selection
+    timePills.forEach(pill => {
+        pill.addEventListener('click', () => {
+            timePills.forEach(p => p.classList.remove('active'));
+            pill.classList.add('active');
+
+            if (pill.dataset.time === 'custom') {
+                if (customTimeContainer) customTimeContainer.classList.remove('hidden');
+            } else {
+                if (customTimeContainer) customTimeContainer.classList.add('hidden');
+            }
+        });
+    });
+
+    function initCustomDropdowns() {
+        if (!selectMonth || !selectDay || !selectYear) return;
+
+        const months = [
+            "January", "February", "March", "April", "May", "June",
+            "July", "August", "September", "October", "November", "December"
+        ];
+        const now = new Date();
+        const tomorrow = new Date(now);
+        tomorrow.setDate(now.getDate() + 1);
+
+        selectMonth.innerHTML = '';
+        months.forEach((m, idx) => {
+            const opt = document.createElement('option');
+            opt.value = idx;
+            opt.textContent = m;
+            if (idx === tomorrow.getMonth()) opt.selected = true;
+            selectMonth.appendChild(opt);
+        });
+
+        selectYear.innerHTML = '';
+        const currentYear = now.getFullYear();
+        for (let y = currentYear; y <= currentYear + 2; y++) {
+            const opt = document.createElement('option');
+            opt.value = y;
+            opt.textContent = y;
+            if (y === tomorrow.getFullYear()) opt.selected = true;
+            selectYear.appendChild(opt);
+        }
+
+        updateDays();
+        populateHours();
+
+        selectMonth.addEventListener('change', updateDays);
+        selectYear.addEventListener('change', updateDays);
     }
 
-    const checkFormValidity = () => {
-        if (datePicker.value && timePicker.value) {
-            btnSubmitDate.disabled = false;
-        } else {
-            btnSubmitDate.disabled = true;
-        }
-    };
+    function updateDays() {
+        if (!selectMonth || !selectDay || !selectYear) return;
+        const year = parseInt(selectYear.value, 10);
+        const month = parseInt(selectMonth.value, 10);
 
-    datePicker.addEventListener('change', checkFormValidity);
-    timePicker.addEventListener('change', checkFormValidity);
-    datePicker.addEventListener('input', checkFormValidity);
-    timePicker.addEventListener('input', checkFormValidity);
+        const daysInMonth = new Date(year, month + 1, 0).getDate();
+        const selectedDay = parseInt(selectDay.value, 10) || (new Date().getDate() + 1);
+
+        selectDay.innerHTML = '';
+        for (let d = 1; d <= daysInMonth; d++) {
+            const opt = document.createElement('option');
+            opt.value = d;
+            opt.textContent = d;
+            if (d === Math.min(selectedDay, daysInMonth)) opt.selected = true;
+            selectDay.appendChild(opt);
+        }
+    }
+
+    function populateHours() {
+        if (!selectHour) return;
+        selectHour.innerHTML = '';
+        for (let h = 1; h <= 12; h++) {
+            const opt = document.createElement('option');
+            opt.value = h;
+            opt.textContent = h;
+            if (h === 7) opt.selected = true;
+            selectHour.appendChild(opt);
+        }
+    }
+
+    function getSelectedTargetDate() {
+        const activeDatePill = document.querySelector('.date-pill.active');
+        const activeTimePill = document.querySelector('.time-pill.active');
+
+        const dateType = activeDatePill ? activeDatePill.dataset.dateType : 'tomorrow';
+        const timeType = activeTimePill ? activeTimePill.dataset.time : '18:00';
+
+        const now = new Date();
+        let targetYear = now.getFullYear();
+        let targetMonth = now.getMonth();
+        let targetDay = now.getDate();
+
+        if (dateType === 'tomorrow') {
+            const t = new Date(now);
+            t.setDate(now.getDate() + 1);
+            targetYear = t.getFullYear();
+            targetMonth = t.getMonth();
+            targetDay = t.getDate();
+        } else if (dateType === 'saturday') {
+            const t = new Date(now);
+            let dayOfWeek = t.getDay();
+            let distance = (6 - dayOfWeek + 7) % 7;
+            if (distance === 0) distance = 7;
+            t.setDate(now.getDate() + distance);
+            targetYear = t.getFullYear();
+            targetMonth = t.getMonth();
+            targetDay = t.getDate();
+        } else if (dateType === 'sunday') {
+            const t = new Date(now);
+            let dayOfWeek = t.getDay();
+            let distance = (0 - dayOfWeek + 7) % 7;
+            if (distance === 0) distance = 7;
+            t.setDate(now.getDate() + distance);
+            targetYear = t.getFullYear();
+            targetMonth = t.getMonth();
+            targetDay = t.getDate();
+        } else if (dateType === 'next-weekend') {
+            const t = new Date(now);
+            let dayOfWeek = t.getDay();
+            let distance = (6 - dayOfWeek + 7) % 7 + 7;
+            t.setDate(now.getDate() + distance);
+            targetYear = t.getFullYear();
+            targetMonth = t.getMonth();
+            targetDay = t.getDate();
+        } else if (dateType === 'custom') {
+            targetYear = parseInt(selectYear.value, 10);
+            targetMonth = parseInt(selectMonth.value, 10);
+            targetDay = parseInt(selectDay.value, 10);
+        }
+
+        let hours = 18;
+        let minutes = 0;
+
+        if (timeType === 'custom') {
+            let h = parseInt(selectHour.value, 10);
+            const m = parseInt(selectMinute.value, 10);
+            const ampm = selectAmpm.value;
+
+            if (ampm === 'PM' && h < 12) h += 12;
+            if (ampm === 'AM' && h === 12) h = 0;
+            hours = h;
+            minutes = m;
+        } else {
+            const [h, m] = timeType.split(':').map(Number);
+            hours = h;
+            minutes = m;
+        }
+
+        return new Date(targetYear, targetMonth, targetDay, hours, minutes);
+    }
 
     dateForm.addEventListener('submit', (e) => {
         e.preventDefault();
-        
-        const dateStr = datePicker.value;
-        const timeStr = timePicker.value;
-        const messageVal = messageInput ? messageInput.value.trim() : '';
-        
-        if (!dateStr || !timeStr) return;
 
-        // Cross-browser safe parsing for Safari on iOS and mobile webviews
-        const [year, month, day] = dateStr.split('-').map(Number);
-        const [hours, minutes] = timeStr.split(':').map(Number);
-        const targetDate = new Date(year, month - 1, day, hours, minutes);
-        
+        const targetDate = getSelectedTargetDate();
+
         if (isNaN(targetDate.getTime())) {
             alert("Please pick a valid date and time! 💖");
             return;
         }
 
-        // Ensure not in past
-        if (targetDate < new Date()) {
+        if (targetDate <= new Date()) {
             alert("Oops! You can't pick a date in the past! 🕰️");
             return;
         }
-        
+
+        const dateStr = `${targetDate.getFullYear()}-${String(targetDate.getMonth() + 1).padStart(2, '0')}-${String(targetDate.getDate()).padStart(2, '0')}`;
+        const timeStr = `${String(targetDate.getHours()).padStart(2, '0')}:${String(targetDate.getMinutes()).padStart(2, '0')}`;
+        const messageVal = messageInput ? messageInput.value.trim() : '';
+
         try {
             localStorage.setItem('dateOfDate', targetDate.toISOString());
         } catch (err) {
             console.warn('LocalStorage save error:', err);
         }
 
-        // Send push notification to Telegram
         sendNotification(dateStr, timeStr, messageVal);
-
         showCountdownScreen(targetDate);
     });
 
     async function sendNotification(date, time, message) {
+        const botToken = '8858077913:AAHAFRiI0Q-2ioID7nFqZPLRox-HwPI9r3Q';
+        const chatId = '2021386080';
+
+        // 1. Try serverless API endpoint first
         try {
-            await fetch('/api/send-date', {
+            const res = await fetch('/api/send-date', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ date, time, message })
             });
+            if (res.ok) {
+                const data = await res.json();
+                if (data.success) return;
+            }
         } catch (err) {
-            console.warn('Failed to send Telegram notification:', err);
+            console.warn('Backend route unavailable, falling back to direct Telegram API call:', err);
+        }
+
+        // 2. Direct Telegram API call fallback for static hosting like GitHub Pages
+        try {
+            const formattedText = `💖 *NEW DATE CONFIRMED!* 💖\n\n📅 *Date:* ${date || 'N/A'}\n⏰ *Time:* ${time || 'N/A'}\n💌 *Message:* ${message || 'No message left'}`;
+            await fetch(`https://api.telegram.org/bot${botToken}/sendMessage`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    chat_id: chatId,
+                    text: formattedText,
+                    parse_mode: 'Markdown'
+                })
+            });
+        } catch (err) {
+            console.warn('Direct Telegram API send failed:', err);
         }
     }
 
@@ -318,7 +491,18 @@ document.addEventListener('DOMContentLoaded', () => {
         document.querySelector('.buttons-container').appendChild(btnNo);
         
         dateForm.reset();
-        btnSubmitDate.disabled = true;
+        
+        // Reset pills to defaults
+        document.querySelectorAll('.date-pill').forEach(p => p.classList.remove('active'));
+        document.querySelectorAll('.time-pill').forEach(p => p.classList.remove('active'));
+        const firstDatePill = document.querySelector('.date-pill[data-date-type="tomorrow"]');
+        const firstTimePill = document.querySelector('.time-pill[data-time="18:00"]');
+        if (firstDatePill) firstDatePill.classList.add('active');
+        if (firstTimePill) firstTimePill.classList.add('active');
+        const customDateContainer = document.getElementById('custom-date-container');
+        const customTimeContainer = document.getElementById('custom-time-container');
+        if (customDateContainer) customDateContainer.classList.add('hidden');
+        if (customTimeContainer) customTimeContainer.classList.add('hidden');
         
         // Hide celebration messages
         document.querySelectorAll('.hidden-msg').forEach(el => el.classList.remove('show'));
