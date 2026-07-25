@@ -17,6 +17,12 @@ document.addEventListener('DOMContentLoaded', () => {
     
     const confirmedDatetime = document.getElementById('confirmed-datetime');
     const btnReset = document.getElementById('btn-reset');
+    
+    // Countdown elements
+    const cdDays = document.getElementById('cd-days');
+    const cdHours = document.getElementById('cd-hours');
+    const cdMins = document.getElementById('cd-mins');
+    const cdSecs = document.getElementById('cd-secs');
 
     // --- State ---
     let noAttempts = 0;
@@ -256,6 +262,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function startCountdown(targetDate) {
         if (countdownInterval) clearInterval(countdownInterval);
+
+        const elDays = cdDays || document.getElementById('cd-days');
+        const elHours = cdHours || document.getElementById('cd-hours');
+        const elMins = cdMins || document.getElementById('cd-mins');
+        const elSecs = cdSecs || document.getElementById('cd-secs');
         
         const updateCD = () => {
             const now = new Date();
@@ -263,10 +274,10 @@ document.addEventListener('DOMContentLoaded', () => {
             
             if (diff <= 0) {
                 clearInterval(countdownInterval);
-                cdDays.textContent = '00';
-                cdHours.textContent = '00';
-                cdMins.textContent = '00';
-                cdSecs.textContent = '00';
+                if (elDays) elDays.textContent = '00';
+                if (elHours) elHours.textContent = '00';
+                if (elMins) elMins.textContent = '00';
+                if (elSecs) elSecs.textContent = '00';
                 return;
             }
             
@@ -275,10 +286,10 @@ document.addEventListener('DOMContentLoaded', () => {
             const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
             const secs = Math.floor((diff % (1000 * 60)) / 1000);
             
-            cdDays.textContent = String(days).padStart(2, '0');
-            cdHours.textContent = String(hours).padStart(2, '0');
-            cdMins.textContent = String(mins).padStart(2, '0');
-            cdSecs.textContent = String(secs).padStart(2, '0');
+            if (elDays) elDays.textContent = String(days).padStart(2, '0');
+            if (elHours) elHours.textContent = String(hours).padStart(2, '0');
+            if (elMins) elMins.textContent = String(mins).padStart(2, '0');
+            if (elSecs) elSecs.textContent = String(secs).padStart(2, '0');
         };
         
         updateCD();
